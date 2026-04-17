@@ -1,0 +1,108 @@
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: linear-gradient(135deg, #fff5f7, #ffe4ec, #ffd1dc); min-height: 100vh; }
+  @keyframes pulse { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.06)} }
+  @keyframes fall { 0%{transform:translateY(-40px) rotate(0deg);opacity:0} 10%{opacity:1} 100%{transform:translateY(110vh) rotate(540deg);opacity:.3} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes letterOpen { 0%{transform:scale(.5) rotate(-8deg);opacity:0} 60%{transform:scale(1.03) rotate(1deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
+  .btn-open { animation: pulse 2s ease-in-out infinite; }
+  .falling { position:absolute; top:-40px; animation: fall linear infinite; pointer-events:none; }
+  .fade-in { animation: fadeIn .4s ease; }
+  .letter-open { animation: letterOpen .7s cubic-bezier(.34,1.56,.64,1); }
+</style>
+
+<div id="app" style="min-height:600px;position:relative;overflow:hidden;background:linear-gradient(135deg,#fff5f7,#ffe4ec,#ffd1dc);">
+  <div id="petals-bg" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;"></div>
+
+  <div style="position:relative;z-index:10;display:flex;min-height:600px;flex-direction:column;align-items:center;justify-content:center;padding:1rem;">
+    <div id="heart-container" style="position:relative;width:420px;height:400px;max-width:90vw;"></div>
+    <p id="subtitle" style="margin-top:1.5rem;font-family:Georgia,serif;font-style:italic;color:rgba(190,30,80,.6);font-size:13px;opacity:0;transition:opacity 1s ease 3s;">✦ feito com amor para você ✦</p>
+  </div>
+
+  <div id="modal" style="display:none;position:absolute;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(80,0,20,.55);backdrop-filter:blur(4px);padding:1rem;min-height:600px;">
+    <div class="letter-open" style="position:relative;max-width:480px;width:100%;">
+      <div style="position:relative;border-radius:12px;padding:2.5rem;box-shadow:0 25px 60px rgba(0,0,0,.2);background:linear-gradient(135deg,#fffaf0,#fff5e6);">
+        <button onclick="closeModal()" style="position:absolute;top:-12px;right:-12px;width:36px;height:36px;border-radius:50%;background:#be1e50;color:#fff;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(190,30,80,.4);">✕</button>
+        <div style="text-align:center;margin-bottom:1rem;font-size:2.5rem;">💌</div>
+        <h2 style="font-family:Georgia,serif;font-size:1.8rem;color:#be1e50;text-align:center;margin-bottom:1.5rem;font-style:italic;font-weight:normal;">Minha querida Aline,</h2>
+        <div style="font-family:Georgia,serif;color:rgba(30,5,10,.75);line-height:1.8;font-size:16px;">
+          <p style="margin-bottom:1rem;">Se eu pudesse contar as estrelas do céu, ainda assim faltariam números para expressar o quanto você significa para mim.</p>
+          <p style="margin-bottom:1rem;">Cada pétala desse coração representa um pensamento meu sobre você — e mesmo assim, são poucas perto de tudo que você desperta no meu peito.</p>
+          <p style="margin-bottom:1rem;">Obrigado por existir, por sorrir, por ser exatamente quem você é. Você é a flor mais linda do meu jardim.</p>
+          <p style="text-align:right;font-style:italic;margin-top:1.5rem;">Com todo o meu amor, ❤️</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const container = document.getElementById('heart-container');
+const subtitle = document.getElementById('subtitle');
+const petalsDiv = document.getElementById('petals-bg');
+
+function petalSVG(size, hue, rot) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" style="transform:rotate(${rot}deg);display:block;"><defs><radialGradient id="g${hue|0}" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="hsl(${hue},90%,88%)"/><stop offset="60%" stop-color="hsl(${hue},80%,70%)"/><stop offset="100%" stop-color="hsl(${hue},70%,55%)"/></radialGradient></defs><path d="M20 4 C28 8,34 16,32 26 C30 34,24 38,20 36 C16 38,10 34,8 26 C6 16,12 8,20 4 Z" fill="url(#g${hue|0})"/><path d="M20 6 Q20 22 20 34" stroke="hsl(${hue},60%,45%)" stroke-width="0.6" opacity="0.5" fill="none"/></svg>`;
+}
+
+const count = 70;
+const points = [];
+for (let i = 0; i < count; i++) {
+  const t = (i / count) * Math.PI * 2;
+  const x = 16 * Math.pow(Math.sin(t), 3);
+  const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+  points.push({ x, y, rot: Math.random()*360, delay: Math.random()*1.5, size: 22+Math.random()*18, hue: 340+Math.random()*30 });
+}
+
+const cx = 210, cy = 200, scale = 11;
+const divs = points.map((p, i) => {
+  const tx = cx + p.x * scale - p.size/2;
+  const ty = cy + p.y * scale - p.size/2;
+  const sx = cx + (Math.random()-.5)*700 - p.size/2;
+  const sy = cy + (Math.random()-.5)*700 - p.size/2;
+  const el = document.createElement('div');
+  el.style.cssText = `position:absolute;left:0;top:0;transform:translate(${sx}px,${sy}px) rotate(${p.rot+180}deg) scale(0.3);opacity:0;transition:transform 1.8s cubic-bezier(.22,1,.36,1) ${p.delay}s, opacity 1.2s ease ${p.delay}s;`;
+  el.innerHTML = petalSVG(p.size, p.hue, 0);
+  container.appendChild(el);
+  return { el, tx, ty, rot: p.rot };
+});
+
+const btn = document.createElement('button');
+btn.className = 'btn-open';
+btn.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;background:rgba(255,255,255,.82);backdrop-filter:blur(6px);border:1px solid rgba(190,30,80,.25);border-radius:9999px;padding:.9rem 2rem;cursor:pointer;box-shadow:0 10px 40px -10px rgba(190,30,80,.5);opacity:0;transition:opacity .8s ease 2.5s;';
+btn.innerHTML = '<span style="font-family:Georgia,serif;color:#9f1239;font-size:1rem;font-style:italic;letter-spacing:.04em;">abra a carta</span>';
+btn.onclick = openModal;
+container.appendChild(btn);
+
+setTimeout(() => {
+  divs.forEach(({ el, tx, ty, rot }) => {
+    el.style.transform = `translate(${tx}px,${ty}px) rotate(${rot}deg) scale(1)`;
+    el.style.opacity = '1';
+  });
+  btn.style.opacity = '1';
+  subtitle.style.opacity = '1';
+}, 100);
+
+for (let i = 0; i < 22; i++) {
+  const d = document.createElement('div');
+  d.className = 'falling';
+  const left = (i * 4.6) % 100;
+  const delay = Math.random() * 8;
+  const dur = 8 + Math.random() * 6;
+  d.style.cssText = `left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s;`;
+  const s = 18 + Math.random()*12, h = 340+Math.random()*30, r = Math.random()*360;
+  d.innerHTML = petalSVG(s, h, r);
+  petalsDiv.appendChild(d);
+}
+
+function openModal() {
+  const m = document.getElementById('modal');
+  m.style.display = 'flex';
+  m.classList.add('fade-in');
+  m.onclick = (e) => { if (e.target === m) closeModal(); };
+}
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+</script>
